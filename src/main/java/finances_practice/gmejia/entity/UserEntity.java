@@ -33,14 +33,17 @@ public class UserEntity {
     private String password;
     private String phone;
 
-    @Column(name = "country_id")
-    private Integer countryId;
+    @ManyToOne //Las relaciones de una BD pero como un objeto de Java
+    @JoinColumn(name = "country_id") //Se usa para relaciones (FKs)
+    private CountriesEntity country;
 
-    @Column(name = "gender_id")
-    private Integer genderId;
+    @ManyToOne
+    @JoinColumn(name = "gender_id")
+    private GenderEntity gender;
 
-    @Column(name = "role_id")
-    private Integer roleId;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private RolesEntity role;
 
     private Boolean status;
 

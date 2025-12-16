@@ -8,44 +8,54 @@ import finances_practice.gmejia.repository.UserRepository;
 import finances_practice.gmejia.security.JwtService;
 import finances_practice.gmejia.service.AuthService;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final AuthenticationManager authenticationManager;
 
     @Override
+    @Transactional(readOnly = true)
     public AuthResponse login (LoginRequest request){
-        //Buscar usuario
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BusinessException("El usuario no existe", HttpStatus.CONFLICT));
 
-        //Validar password
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            // Atrapamos el error de Spring y lanzamos TU error personalizado
             throw new BusinessException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
         }
+
+        //Buscar usuario
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow();
 
         // Validar Status
         if (!user.getStatus()) {
             throw new BusinessException("Cuenta inactiva, requiere reactivacion", HttpStatus.FORBIDDEN);
         }
 
-        // Traducir el Rol
-        String roleName = (user.getRoleId() != null && user.getRoleId() == 1)
-                ? "Administrador"
-                : "Usuario";
+        // Rol
+        String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";
 
         // Generar Token
-        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRoleId());
+        assert user.getRole() != null;
+        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
 
         //Fechas del Token de Inicio y de Fin
         Date issued = new Date(); // Hora actual
@@ -66,12 +76,21 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse reactivate(LoginRequest request){
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND));
 
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (BadCredentialsException e) {
+            // Atrapamos el error de Spring y lanzamos TU error personalizado
             throw new BusinessException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
         }
+
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+            .orElseThrow();
 
         if (user.getStatus()) {
             throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);
@@ -80,12 +99,12 @@ public class AuthServiceImpl implements AuthService {
         user.setStatus(true);
         userRepository.save(user);
 
-        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRoleId());
+        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
 
         Date issued = new Date(); // Hora actual
         Date expired = new Date(issued.getTime() + jwtService.getExpirationTime());
 
-        String roleName = (user.getRoleId() != null && user.getRoleId() == 1)
+        String roleName = (user.getRole() != null && user.getRole().getId() == 1)
                 ? "Administrador"
                 : "Usuario";
 

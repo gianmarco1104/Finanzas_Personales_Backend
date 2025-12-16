@@ -1,5 +1,6 @@
 package finances_practice.gmejia.security;
 
+import finances_practice.gmejia.entity.UserEntity;
 import finances_practice.gmejia.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,13 +58,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEntity != null && jwtService.isTokenValid(jwt, userEntity.getEmail())) {
 
-                String roleName = getRoleName(userEntity.getRoleId());
-
                 // Crear objeto UserDetails de Spring Security (Mapeo rápido)
                 UserDetails userDetails = User.builder()
                         .username(userEntity.getEmail())
                         .password(userEntity.getPassword())
-                        .roles(roleName)
+                        .roles(userEntity.getRole().getName())
                         .build();
 
                 // Crear el objeto de autenticación
@@ -83,15 +82,5 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
 
-    }
-
-    private String getRoleName(Integer roleId) {
-        if (roleId == null) return "Usuario";
-
-        return switch (roleId) {
-            case 1 -> "Administrador";
-            case 2 -> "Usuario";
-            default -> "Usuario";
-        };
     }
 }
