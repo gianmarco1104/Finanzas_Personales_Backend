@@ -19,7 +19,6 @@ import java.util.Date;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -37,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
                     )
             );
         } catch (BadCredentialsException e) {
-            // Atrapamos el error de Spring y lanzamos TU error personalizado
+            // Error personalizado
             throw new BusinessException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
         }
 
@@ -54,10 +53,9 @@ public class AuthServiceImpl implements AuthService {
         String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";
 
         // Generar Token
-        assert user.getRole() != null;
         String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
 
-        //Fechas del Token de Inicio y de Fin
+        // Fechas del Token de Inicio y de Fin
         Date issued = new Date(); // Hora actual
         Date expired = new Date(issued.getTime() + jwtService.getExpirationTime());
 
@@ -75,6 +73,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public AuthResponse reactivate(LoginRequest request){
 
         try {
@@ -104,9 +103,7 @@ public class AuthServiceImpl implements AuthService {
         Date issued = new Date(); // Hora actual
         Date expired = new Date(issued.getTime() + jwtService.getExpirationTime());
 
-        String roleName = (user.getRole() != null && user.getRole().getId() == 1)
-                ? "Administrador"
-                : "Usuario";
+        String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";
 
         return AuthResponse.builder()
                 .token(token)

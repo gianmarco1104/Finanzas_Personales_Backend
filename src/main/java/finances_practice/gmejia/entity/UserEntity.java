@@ -19,6 +19,7 @@ DATA -> Lombok, Metodos de acceso Getter y Setter, Crea un ToString para todos l
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //Genera el autoincremental
     private Long id;
@@ -48,8 +49,14 @@ public class UserEntity {
     private Boolean status;
 
     @Column(name = "created_by")
-    private Integer createdBy;
+    private Long createdBy;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_by")
+    private Long updatedBy;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 }

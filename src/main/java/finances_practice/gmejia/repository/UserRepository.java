@@ -11,6 +11,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     //JPA cuenta con metodos ya listos con consultas establecidas
     //Optional -> Se usa para evitar el NullPointerException
     Optional<UserEntity> findByEmail(String email);
-
     boolean existsByEmail(String email);
 }
