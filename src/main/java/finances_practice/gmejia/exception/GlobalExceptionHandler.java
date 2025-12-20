@@ -3,6 +3,7 @@ package finances_practice.gmejia.exception;
 import finances_practice.gmejia.dto.ErrorDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -63,5 +64,17 @@ public class GlobalExceptionHandler {
 
         ex.printStackTrace();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    //Manejar error con la anotacion Authorize
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorDto> handleAccessDeniedException(AccessDeniedException ex){
+        ErrorDto error = ErrorDto.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .error("Unathorized")
+                .message("Acceso denegado")
+                .build();
+        ex.printStackTrace();
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 }

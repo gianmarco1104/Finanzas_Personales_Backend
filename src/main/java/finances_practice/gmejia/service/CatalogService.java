@@ -1,8 +1,7 @@
 package finances_practice.gmejia.service;
 
-import finances_practice.gmejia.dto.response.CountriesResponse;
 import finances_practice.gmejia.dto.response.CatalogResponse;
-import finances_practice.gmejia.entity.RolesEntity;
+import finances_practice.gmejia.dto.response.CountriesResponse;
 
 import java.util.List;
 

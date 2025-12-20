@@ -24,32 +24,20 @@ public class CatalogServiceImpl implements CatalogService {
     private final CatalogMapper catalogMapper;
 
     @Override
-    public List<CountriesResponse> getCountries(){
-        return catalogMapper.toCountriesList(countriesRepository.findAll());
-    }
+    public List<CountriesResponse> getCountries(){return catalogMapper.toCountriesList(countriesRepository.findAll());}
 
     @Override
-    public List<CatalogResponse> getGenders(){
-        return catalogMapper.toGendersList(genderRepository.findAll());
-    }
+    public List<CatalogResponse> getGenders(){return catalogMapper.toGendersList(genderRepository.findAll());}
 
     @Override
-    public List<CatalogResponse> getRoles(){
-        return catalogMapper.toRolesList(rolesRepository.findAll());
-    }
+    public List<CatalogResponse> getRoles(){return catalogMapper.toRolesList(rolesRepository.findAll());}
 
     @Override
-    public List<CatalogResponse> getPaymentMethods(){
-        return catalogMapper.toPaymentMethodsList(paymentMethodsRepository.findAll());
-    }
+    public List<CatalogResponse> getPaymentMethods(){return catalogMapper.toPaymentMethodsList(paymentMethodsRepository.findAll());}
 
     @Override
-    public List<CatalogResponse> getCategories(){
-        return catalogMapper.toCategoriesList(categoriesRepository.findAll());
-    }
+    public List<CatalogResponse> getCategories(){return catalogMapper.toCategoriesList(categoriesRepository.findAll());}
 
     @Override
-    public List<CatalogResponse> getTransactionTypes(){
-        return catalogMapper.toTransactionTypesList(transactionTypesRepository.findAll());
-    }
+    public List<CatalogResponse> getTransactionTypes(){return catalogMapper.toTransactionTypesList(transactionTypesRepository.findAll());}
 }

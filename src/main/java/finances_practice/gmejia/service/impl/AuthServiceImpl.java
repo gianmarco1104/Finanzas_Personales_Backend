@@ -27,34 +27,44 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public AuthResponse login (LoginRequest request){
+        authenticate(request.getEmail(), request.getPassword());
 
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-        } catch (BadCredentialsException e) {
-            // Error personalizado
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND )); //Buscar usuario
+
+        if (!user.getStatus()) {throw new BusinessException("Cuenta inactiva, requiere reactivacion", HttpStatus.FORBIDDEN);}  //Validar Status
+
+        return buildAuthResponse(user, "Login exitoso");
+    }
+
+    @Override
+    @Transactional
+    public AuthResponse reactivate(LoginRequest request){
+        authenticate(request.getEmail(), request.getPassword());
+
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND ));
+
+        if (user.getStatus()) {throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);}
+        user.setStatus(true); //Cambiar estado a true
+        userRepository.save(user); //Update del user
+
+        return buildAuthResponse(user,"Cuenta reactivada correctamente");
+
+    }
+
+    private void authenticate(String email, String password){
+        try{
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+        }catch (BadCredentialsException e){
             throw new BusinessException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
         }
+    }
 
-        //Buscar usuario
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow();
+    private AuthResponse buildAuthResponse(UserEntity user, String message){
 
-        // Validar Status
-        if (!user.getStatus()) {
-            throw new BusinessException("Cuenta inactiva, requiere reactivacion", HttpStatus.FORBIDDEN);
-        }
-
-        // Rol
-        String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";
-
-        // Generar Token
-        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
-
+        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());// Generar Token
+        String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";         // Rol
         // Fechas del Token de Inicio y de Fin
         Date issued = new Date(); // Hora actual
         Date expired = new Date(issued.getTime() + jwtService.getExpirationTime());
@@ -62,52 +72,7 @@ public class AuthServiceImpl implements AuthService {
         // Retornar el objeto completo
         return AuthResponse.builder()
                 .token(token)
-                .message("Login exitoso")
-                .userId(user.getId())
-                .username(user.getEmail())
-                .fullName(user.getFirstName() + " " + user.getLastName())
-                .role(roleName)
-                .issuedAt(issued)
-                .expiredAt(expired)
-                .build();
-    }
-
-    @Override
-    @Transactional
-    public AuthResponse reactivate(LoginRequest request){
-
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            request.getEmail(),
-                            request.getPassword()
-                    )
-            );
-        } catch (BadCredentialsException e) {
-            // Atrapamos el error de Spring y lanzamos TU error personalizado
-            throw new BusinessException("Credenciales incorrectas", HttpStatus.UNAUTHORIZED);
-        }
-
-        UserEntity user = userRepository.findByEmail(request.getEmail())
-            .orElseThrow();
-
-        if (user.getStatus()) {
-            throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);
-        }
-
-        user.setStatus(true);
-        userRepository.save(user);
-
-        String token = jwtService.generateToken(user.getEmail(), user.getId(), user.getRole().getId());
-
-        Date issued = new Date(); // Hora actual
-        Date expired = new Date(issued.getTime() + jwtService.getExpirationTime());
-
-        String roleName = (user.getRole() != null) ? user.getRole().getName() : "Sin Rol";
-
-        return AuthResponse.builder()
-                .token(token)
-                .message("Login exitoso")
+                .message(message)
                 .userId(user.getId())
                 .username(user.getEmail())
                 .fullName(user.getFirstName() + " " + user.getLastName())

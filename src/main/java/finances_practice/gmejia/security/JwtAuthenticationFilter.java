@@ -1,6 +1,5 @@
 package finances_practice.gmejia.security;
 
-import finances_practice.gmejia.entity.UserEntity;
 import finances_practice.gmejia.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
