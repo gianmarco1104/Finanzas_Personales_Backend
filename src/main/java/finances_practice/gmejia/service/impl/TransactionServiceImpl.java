@@ -7,10 +7,14 @@ import finances_practice.gmejia.dto.response.GeneralResponse;
 import finances_practice.gmejia.dto.response.TransactionPerUserDetailResponse;
 import finances_practice.gmejia.dto.response.TransactionPerUserResponse;
 import finances_practice.gmejia.dto.response.TransactionSummary;
+import finances_practice.gmejia.entity.CategoriesEntity;
+import finances_practice.gmejia.entity.PaymentMethodsEntity;
 import finances_practice.gmejia.entity.TransactionEntity;
 import finances_practice.gmejia.entity.UserEntity;
 import finances_practice.gmejia.exception.BusinessException;
 import finances_practice.gmejia.mapper.TransactionMapper;
+import finances_practice.gmejia.repository.CategoriesRepository;
+import finances_practice.gmejia.repository.PaymentMethodsRepository;
 import finances_practice.gmejia.repository.TransactionRepository;
 import finances_practice.gmejia.service.TransactionService;
 import finances_practice.gmejia.utils.UserContextUtils;
@@ -29,6 +33,8 @@ import java.util.stream.Collectors;
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository transactionRepository;
+    private final PaymentMethodsRepository paymentMethodsRepository;
+    private final CategoriesRepository categoriesRepository;
     private final ObjectMapper objectMapper;
     private final UserContextUtils userContextUtils;
     private final TransactionMapper transactionMapper;
@@ -93,6 +99,23 @@ public class TransactionServiceImpl implements TransactionService {
         UserEntity user = userContextUtils.getCurrentUser();
 
         TransactionEntity entity = transactionMapper.toEntity(request);
+
+        if (request.getCategoryId() != null) {
+            CategoriesEntity category = categoriesRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new BusinessException("Categoría no encontrada", HttpStatus.BAD_REQUEST));
+            entity.setCategories(category);
+        } else {
+            entity.setCategories(null);
+        }
+
+        if (request.getPaymentMethodId() != null) {
+            PaymentMethodsEntity paymentMethod = paymentMethodsRepository.findById(request.getPaymentMethodId())
+                    .orElseThrow(() -> new BusinessException("Método de pago no encontrado", HttpStatus.BAD_REQUEST));
+            entity.setPaymentMethods(paymentMethod);
+        } else {
+            entity.setPaymentMethods(null);
+        }
+
         entity.setUserId(user.getId());
         entity.setCreatedBy(user.getId());
 
@@ -117,6 +140,21 @@ public class TransactionServiceImpl implements TransactionService {
 
         transactionMapper.updateEntity(request, transaction);
 
+        if (request.getCategoryId() != null) {
+            CategoriesEntity category = categoriesRepository.findById(request.getCategoryId())
+                    .orElseThrow(() -> new BusinessException("Categoría no encontrada", HttpStatus.BAD_REQUEST));
+            transaction.setCategories(category);
+        } else {
+            transaction.setCategories(null);
+        }
+
+        if (request.getPaymentMethodId() != null) {
+            PaymentMethodsEntity paymentMethod = paymentMethodsRepository.findById(request.getPaymentMethodId())
+                    .orElseThrow(() -> new BusinessException("Método de pago no encontrado", HttpStatus.BAD_REQUEST));
+            transaction.setPaymentMethods(paymentMethod);
+        } else {
+            transaction.setPaymentMethods(null);
+        }
         transaction.setUpdatedBy(user.getId());
         transactionRepository.save(transaction);
 

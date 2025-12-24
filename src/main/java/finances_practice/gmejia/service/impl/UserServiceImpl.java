@@ -79,7 +79,7 @@ public class UserServiceImpl implements UserService {
         }
 
         if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())){
-            throw new BusinessException("La contrasena es incorrecta", HttpStatus.UNAUTHORIZED);
+            throw new BusinessException("La contraseña es incorrecta", HttpStatus.UNAUTHORIZED);
         }
 
         if(userRepository.existsByEmail(request.getNewEmail())){
@@ -103,11 +103,11 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userContextUtils.getCurrentUser();
 
         if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())){
-            throw new BusinessException("La contrasena actual es incorrecta", HttpStatus.UNAUTHORIZED);
+            throw new BusinessException("La contraseña actual es incorrecta", HttpStatus.UNAUTHORIZED);
         }
 
         if(passwordEncoder.matches(request.getNewPassword(), user.getPassword())){
-            throw new BusinessException("La contrasena no puede ser igual a la anterior", HttpStatus.BAD_REQUEST);
+            throw new BusinessException("La contraseña no puede ser igual a la anterior", HttpStatus.BAD_REQUEST);
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
