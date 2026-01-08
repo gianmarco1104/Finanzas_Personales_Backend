@@ -15,5 +15,5 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     boolean existsByEmail(String email);
 
     //Admin
-    List<UserEntity> findAllByStatusAndRole_NameOrderByIdAsc(Boolean status, String roleName);
+    List<UserEntity> findAllByEnabledAndRole_NameOrderByIdAsc(boolean enabled, String roleName);
 }

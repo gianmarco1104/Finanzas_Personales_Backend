@@ -46,7 +46,8 @@ public class UserEntity {
     @JoinColumn(name = "role_id")
     private RolesEntity role;
 
-    private Boolean status;
+    @Column(name = "status", nullable = false)
+    private boolean enabled;
 
     @Column(name = "created_by")
     private Long createdBy;
@@ -59,4 +60,5 @@ public class UserEntity {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
 }

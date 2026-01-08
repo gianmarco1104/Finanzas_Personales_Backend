@@ -32,7 +32,7 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND )); //Buscar usuario
 
-        if (!user.getStatus()) {throw new BusinessException("Cuenta inactiva, requiere reactivacion", HttpStatus.FORBIDDEN);}  //Validar Status
+        if (!user.isEnabled()) {throw new BusinessException("Cuenta inactiva, requiere reactivacion", HttpStatus.FORBIDDEN);}  //Validar Status
 
         return buildAuthResponse(user, "Login exitoso");
     }
@@ -45,8 +45,8 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND ));
 
-        if (user.getStatus()) {throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);}
-        user.setStatus(true); //Cambiar estado a true
+        if (user.isEnabled()) {throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);}
+        user.setEnabled(true); //Cambiar estado a true
         userRepository.save(user); //Update del user
 
         return buildAuthResponse(user,"Cuenta reactivada correctamente");

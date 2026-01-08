@@ -31,7 +31,7 @@ public interface UserMapper {
     @Mapping(target = "gender.id", source = "request.genderId")
     @Mapping(target = "role.id", constant = "2")
     @Mapping(target = "createdBy", expression = "java(2L)")
-    @Mapping(target = "status", constant = "true")
+    @Mapping(target = "enabled", constant = "false")
     @Mapping(target = "createdAt", expression = "java(LocalDateTime.now())")
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
@@ -44,7 +44,7 @@ public interface UserMapper {
     @Mapping(target = "gender.id", source = "request.genderId")
     @Mapping(target = "role.id", ignore = true)
     @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "enabled", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", expression = "java(LocalDateTime.now())")
     @Mapping(target = "updatedBy", expression = "java(entity.getId())")
@@ -58,7 +58,7 @@ public interface UserMapper {
     @Mapping(target = "id", source = "entity.id")
     @Mapping(target = "email", source = "entity.email")
     @Mapping(target = "phone", source = "entity.phone")
-    @Mapping(target = "status", source = "entity.status")
+    @Mapping(target = "status", source = "entity.enabled")
     @Mapping(target = "createdAt", source = "entity.createdAt")
     ListUsersResponse toUserResponse(UserEntity entity);
     List<ListUsersResponse> toUserResponseList(List<UserEntity> users);

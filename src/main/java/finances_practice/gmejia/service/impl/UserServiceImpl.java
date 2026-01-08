@@ -1,16 +1,16 @@
 package finances_practice.gmejia.service.impl;
 
-import finances_practice.gmejia.dto.request.EmailUpdateRequest;
-import finances_practice.gmejia.dto.request.PasswordUpdateRequest;
-import finances_practice.gmejia.dto.request.RegisterRequest;
-import finances_practice.gmejia.dto.request.UpdateRequest;
+import finances_practice.gmejia.dto.request.*;
 import finances_practice.gmejia.dto.response.GeneralResponse;
 import finances_practice.gmejia.dto.response.ListUsersResponse;
 import finances_practice.gmejia.dto.response.UserResponse;
 import finances_practice.gmejia.entity.UserEntity;
+import finances_practice.gmejia.entity.VerificationCodeEntity;
 import finances_practice.gmejia.exception.BusinessException;
 import finances_practice.gmejia.mapper.UserMapper;
 import finances_practice.gmejia.repository.UserRepository;
+import finances_practice.gmejia.repository.VerificationCodeRepository;
+import finances_practice.gmejia.service.EmailService;
 import finances_practice.gmejia.service.UserService;
 import finances_practice.gmejia.utils.UserContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +32,8 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     private final UserContextUtils userContextUtils;
+    private final VerificationCodeRepository codeRepository;
+    private final EmailService emailService;
 
     @Override
     @Transactional
@@ -43,9 +47,24 @@ public class UserServiceImpl implements UserService {
         UserEntity user = userMapper.toEntity(request,passEncripted);
         UserEntity savedUser = userRepository.save(user);
 
+        // Generar codigo de verificacion
+        String code = String.valueOf(new Random().nextInt(900000)+ 100000);
+
+        VerificationCodeEntity verificationCode = VerificationCodeEntity.builder()
+                .user(user)
+                .code(code)
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        codeRepository.save(verificationCode);
+
+        //Enviar email
+        emailService.sendVerificationEmail(savedUser.getEmail(), code);
+
         return GeneralResponse.builder()
                 .id(savedUser.getId())
-                .message("Registro exitoso")
+                .message("Registro exitoso, Verifique su correo")
                 .build();
     }
 
@@ -124,7 +143,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     @PreAuthorize("hasRole('Administrador')")
     public List<ListUsersResponse> getUsersByStatus(Boolean status){
-        List<UserEntity> users = userRepository.findAllByStatusAndRole_NameOrderByIdAsc(status,"Usuario");
+        List<UserEntity> users = userRepository.findAllByEnabledAndRole_NameOrderByIdAsc(status,"Usuario");
         return userMapper.toUserResponseList(users);
     }
 
@@ -137,10 +156,10 @@ public class UserServiceImpl implements UserService {
         UserEntity targetUser = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND));
 
-        if(Boolean.TRUE.equals(targetUser.getStatus())){
+        if(targetUser.isEnabled()){
             throw new BusinessException("El usuario ya se encuentra con estado activo", HttpStatus.CONFLICT);
         }
-        targetUser.setStatus(true);
+        targetUser.setEnabled(true);
         userRepository.save(targetUser);
 
         return GeneralResponse.builder()
@@ -162,15 +181,71 @@ public class UserServiceImpl implements UserService {
         UserEntity targetUser = userRepository.findById(id)
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND));
 
-        if(Boolean.FALSE.equals(targetUser.getStatus())){
+        if(!targetUser.isEnabled()){
             throw new BusinessException("El usuario ya se encuentra con estado inactivo", HttpStatus.CONFLICT);
         }
-        targetUser.setStatus(false);
+        targetUser.setEnabled(false);
         userRepository.save(targetUser);
 
         return GeneralResponse.builder()
                 .id(targetUser.getId())
                 .message("Usuario deshabilitado correctamente")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public GeneralResponse verifyUser(VerifyCodeRequest request){
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND));
+
+        VerificationCodeEntity vCode = codeRepository.findByUserAndCode(user, request.getCode())
+                .orElseThrow(() -> new BusinessException("Código inválido", HttpStatus.BAD_REQUEST));
+
+        if (vCode.getExpiryDate().isBefore(LocalDateTime.now())) {
+            throw new BusinessException("El código ha expirado", HttpStatus.BAD_REQUEST);
+        }
+
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        codeRepository.delete(vCode);
+
+        return GeneralResponse.builder()
+                .id(user.getId())
+                .message("Cuenta activada exitosamente")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public GeneralResponse resendVerificationCode(ResendCodeRequest request){
+        UserEntity user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND));
+
+        if(user.isEnabled()){
+            throw new BusinessException("Esta cuenta ya está activa", HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<VerificationCodeEntity> oldCode = codeRepository.findByUser(user);
+        oldCode.ifPresent(codeRepository::delete);
+
+        String code = String.valueOf(new Random().nextInt(900000) + 100000);
+
+        VerificationCodeEntity newVerificationCode = VerificationCodeEntity.builder()
+                .user(user)
+                .code(code)
+                .expiryDate(LocalDateTime.now().plusMinutes(30))
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        codeRepository.save(newVerificationCode);
+
+        emailService.sendVerificationEmail(user.getEmail(), code);
+
+        return GeneralResponse.builder()
+                .id(user.getId())
+                .message("Nuevo codigo enviado")
                 .build();
     }
 }
