@@ -30,7 +30,6 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final AuthenticationProvider authenticationProvider;
-    private final UserRepository userRepository;
 
     @Value("${app.cors.origins}")
     private String allowedOrigins;

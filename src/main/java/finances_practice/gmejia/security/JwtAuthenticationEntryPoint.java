@@ -1,6 +1,6 @@
 package finances_practice.gmejia.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import finances_practice.gmejia.dto.ErrorDto;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +13,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 
 //AuthenticationEntryPoint -> Maneja el error cuando el usuario no esta autenticado

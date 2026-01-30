@@ -6,7 +6,8 @@ import finances_practice.gmejia.dto.request.TransactionUpdateRequest;
 import finances_practice.gmejia.dto.response.GeneralResponse;
 import finances_practice.gmejia.dto.response.TransactionPerUserDetailResponse;
 import finances_practice.gmejia.dto.response.TransactionPerUserResponse;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+
 
 import java.util.List;
 

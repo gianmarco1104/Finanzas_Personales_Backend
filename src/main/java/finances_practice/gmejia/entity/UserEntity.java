@@ -24,35 +24,40 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY) //Genera el autoincremental
     private Long id;
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "last_name")
+    @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Column(nullable = false)
     private String email;
+
+    @Column(nullable = false)
     private String password;
+
+    @Column(nullable = false)
     private String phone;
 
     @ManyToOne //Las relaciones de una BD pero como un objeto de Java
-    @JoinColumn(name = "country_id") //Se usa para relaciones (FKs)
+    @JoinColumn(name = "country_id", nullable = false) //Se usa para relaciones (FKs)
     private CountriesEntity country;
 
     @ManyToOne
-    @JoinColumn(name = "gender_id")
+    @JoinColumn(name = "gender_id", nullable = false)
     private GenderEntity gender;
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
+    @JoinColumn(name = "role_id", nullable = false)
     private RolesEntity role;
 
     @Column(name = "status", nullable = false)
     private boolean enabled;
 
-    @Column(name = "created_by")
+    @Column(name = "created_by", nullable = false)
     private Long createdBy;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_by")

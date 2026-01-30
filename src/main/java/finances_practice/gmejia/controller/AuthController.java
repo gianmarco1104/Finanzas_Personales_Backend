@@ -9,6 +9,7 @@ import finances_practice.gmejia.service.AuthService;
 import finances_practice.gmejia.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,24 +21,24 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid LoginRequest request){
+    public ResponseEntity<@NonNull AuthResponse> login(@RequestBody @Valid LoginRequest request){
         AuthResponse response = authService.login(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/reactivate")
-    public ResponseEntity<AuthResponse> reactivate(@RequestBody @Valid LoginRequest request){
+    public ResponseEntity<@NonNull AuthResponse> reactivate(@RequestBody @Valid LoginRequest request){
         AuthResponse response = authService.reactivate(request);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verifyAccount")
-    public ResponseEntity<GeneralResponse> verify(@RequestBody @Valid VerifyCodeRequest request){
+    public ResponseEntity<@NonNull GeneralResponse> verify(@RequestBody @Valid VerifyCodeRequest request){
         return ResponseEntity.ok(userService.verifyUser(request));
     }
 
     @PostMapping("/resendCode")
-    public ResponseEntity<GeneralResponse> resendCode(@RequestBody @Valid ResendCodeRequest request){
+    public ResponseEntity<@NonNull GeneralResponse> resendCode(@RequestBody @Valid ResendCodeRequest request){
         return ResponseEntity.ok(userService.resendVerificationCode(request));
     }
 }

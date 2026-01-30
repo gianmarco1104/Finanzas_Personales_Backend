@@ -3,6 +3,7 @@ package finances_practice.gmejia.repository;
 import finances_practice.gmejia.dto.request.TransactionPerUserRequest;
 import finances_practice.gmejia.dto.response.TransactionSummary;
 import finances_practice.gmejia.entity.TransactionEntity;
+import org.jspecify.annotations.NonNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface TransactionRepository extends JpaRepository<TransactionEntity, Long> {
+public interface TransactionRepository extends JpaRepository<@NonNull TransactionEntity,@NonNull Long> {
     @Query(value = "SELECT finance_personal.fn_get_dashboard_data(:userId)::text", nativeQuery = true)
     String getDashboardData(@Param("userId") Long userId);
 
