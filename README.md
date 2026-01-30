@@ -7,15 +7,6 @@
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Security](https://img.shields.io/badge/Spring_Security-6-6DB33F?style=for-the-badge&logo=spring-security&logoColor=white)
 
-## 📋 Tabla de Contenidos
-- [Arquitectura y Características](#-arquitectura-y-características)
-- [Tecnologías](#-tecnologías)
-- [Pre-requisitos](#-pre-requisitos)
-- [Configuración](#-configuración)
-- [Instalación y Ejecución](#-instalación-y-ejecución)
-- [Documentación de la API](#-documentación-de-la-api)
-- [Roadmap](#-roadmap)
-
 ---
 
 ## 🏗 Arquitectura y Características
