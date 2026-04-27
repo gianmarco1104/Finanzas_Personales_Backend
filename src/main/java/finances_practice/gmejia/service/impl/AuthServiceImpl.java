@@ -45,7 +45,7 @@ public class AuthServiceImpl implements AuthService {
         UserEntity user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new BusinessException("Usuario no encontrado", HttpStatus.NOT_FOUND ));
 
-        if (user.isEnabled()) {throw new BusinessException("La cuenta ya esta activa", HttpStatus.BAD_REQUEST);}
+        if (user.isEnabled()) {throw new BusinessException("La cuenta ya se encuentra activa", HttpStatus.BAD_REQUEST);}
         user.setEnabled(true); //Cambiar estado a true
         userRepository.save(user); //Update del user
 
